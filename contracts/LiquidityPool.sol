@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: ISC
 
-pragma solidity 0.8.16;
+pragma solidity ^0.8.16;
 
 // Libraries
 import "./synthetix/DecimalMath.sol";
@@ -12,7 +12,7 @@ import "./synthetix/Owned.sol";
 import "./libraries/SimpleInitializable.sol";
 import "openzeppelin-contracts-4.4.1/security/ReentrancyGuard.sol";
 
-// Interfaces
+// Interfaces=
 import "./interfaces/IERC20Decimals.sol";
 import "./LiquidityToken.sol";
 import "./OptionGreekCache.sol";
@@ -974,6 +974,7 @@ contract LiquidityPool is Owned, SimpleInitializable, ReentrancyGuard {
     );
   }
 
+  //self written comments //hemanth
   function _getLiquidity(
     uint basePrice,
     uint totalPoolValue,
@@ -982,30 +983,58 @@ contract LiquidityPool is Owned, SimpleInitializable, ReentrancyGuard {
     uint pendingDelta,
     uint longScaleFactor
   ) internal view returns (Liquidity memory) {
+    // Create a new Liquidity struct with initial values of zero
     Liquidity memory liquidity = Liquidity(0, 0, 0, 0, 0, 0, 0);
+
+    // Assign the total pool value to the NAV (Net Asset Value) of the liquidity struct
     liquidity.NAV = totalPoolValue;
+
+    // Assign the usedDelta value to the usedDeltaLiquidity field of the liquidity struct
     liquidity.usedDeltaLiquidity = usedDelta;
 
+    // Calculate the total used quote value by summing totalOutstandingSettlements and totalQueuedDeposits
+
     uint usedQuote = totalOutstandingSettlements + totalQueuedDeposits;
+
+    // Get the total quote value held by the contract by querying the balance of the quote asset
+    // Convert the quote asset balance to 18 decimal places using the ConvertDecimals library
+    // Subtract the usedQuote from the totalQuote to get the available quote value
     uint totalQuote = ConvertDecimals.convertTo18(quoteAsset.balanceOf(address(this)), quoteAsset.decimals());
     uint availableQuote = totalQuote > usedQuote ? totalQuote - usedQuote : 0;
 
+    // Set the pendingDeltaLiquidity field of the liquidity struct based on the availableQuote and pendingDelta
+    // If pendingDelta is greater than the availableQuote, set pendingDeltaLiquidity to availableQuote; otherwise, set it to pendingDelta
     liquidity.pendingDeltaLiquidity = pendingDelta > availableQuote ? availableQuote : pendingDelta;
+
+    // Update the availableQuote by subtracting the pendingDeltaLiquidity from it
     availableQuote -= liquidity.pendingDeltaLiquidity;
 
-    // Only reserve lockedColleratal x scalingFactor which unlocks more liquidity
-    // No longer need to lock one ETH worth of quote per call sold
+    // Calculate the reservedCollatLiquidity based on the lockedCollateral and scaling factors
+    // lockedCollateral.quote is multiplied by lpParams.putCollatScalingFactor
+    // lockedCollateral.base is multiplied by basePrice and lpParams.callCollatScalingFactor
     uint reservedCollatLiquidity = lockedCollateral.quote.multiplyDecimal(lpParams.putCollatScalingFactor) +
       lockedCollateral.base.multiplyDecimal(basePrice).multiplyDecimal(lpParams.callCollatScalingFactor);
+
+    // Set the reservedCollatLiquidity field of the liquidity struct based on availableQuote and reservedCollatLiquidity
+    // If availableQuote is greater than reservedCollatLiquidity, set reservedCollatLiquidity to reservedCollatLiquidity; otherwise, set it to availableQuote
     liquidity.reservedCollatLiquidity = availableQuote > reservedCollatLiquidity
       ? reservedCollatLiquidity
       : availableQuote;
 
+    // Update the availableQuote by subtracting the reservedCollatLiquidity from it
     availableQuote -= liquidity.reservedCollatLiquidity;
+
+    // Calculate the freeLiquidity based on availableQuote and reservedTokenValue
+    // If availableQuote is greater than reservedTokenValue, set freeLiquidity to availableQuote - reservedTokenValue; otherwise, set it to zero
     liquidity.freeLiquidity = availableQuote > reservedTokenValue ? availableQuote - reservedTokenValue : 0;
+
+    // Set the burnableLiquidity field of the liquidity struct to the remaining availableQuote
     liquidity.burnableLiquidity = availableQuote;
+
+    // Set the longScaleFactor field of the liquidity struct to the provided longScaleFactor
     liquidity.longScaleFactor = longScaleFactor;
 
+    // Return the liquidity struct
     return liquidity;
   }
 

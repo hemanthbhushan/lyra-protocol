@@ -132,7 +132,8 @@
     "hardhat-tracer": "1.0.0-alpha.6",
     "openzeppelin-contracts-4.4.1": "npm:@openzeppelin/contracts@4.4.1",
     "openzeppelin-contracts-upgradeable-4.5.1": "npm:@openzeppelin/contracts-upgradeable@4.5.1",
-    "stochastic": "^0.0.14"
+    "stochastic": "^0.0.14",
+    "yarn": "^1.22.19"
   },
   "peerDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",

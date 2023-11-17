@@ -273,7 +273,7 @@ describe('BlackScholes - values', () => {
     });
   });
 
-  it('can call all the functions', async () => {
+  it('can call all the functions', async () strikePrice=> {
     const bsInput: BlackScholesInputsStruct = {
       rateDecimal: toBN(defaultParams.rate.toString()),
       spotDecimal: toBN(defaultParams.spot.toString()),

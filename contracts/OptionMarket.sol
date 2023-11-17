@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: ISC
-pragma solidity 0.8.16;
+pragma solidity ^0.8.16;
 
 // Libraries
 import "./synthetix/DecimalMath.sol";
@@ -311,7 +311,7 @@ contract OptionMarket is Owned, SimpleInitializable, ReentrancyGuard {
     emit BoardBaseIvSet(boardId, baseIv);
   }
 
-  /**
+  /**_addStrikeToBoard
    * @notice Sets the skew of a Strike of a frozen OptionBoard.
    *
    * @param strikeId The id of the strike being modified.
@@ -1078,7 +1078,8 @@ contract OptionMarket is Owned, SimpleInitializable, ReentrancyGuard {
 
     // Store the price now for when users come to settle their options
     boardToPriceAtExpiry[board.id] = spotPrice;
-
+    //here it is fetching out the balances of the all the strike prices with the all the trade types(call(long,short),put(long,short)) 
+    //from the board (board is the collection of the strike prices)
     for (uint i = 0; i < board.strikeIds.length; ++i) {
       Strike memory strike = strikes[board.strikeIds[i]];
 
